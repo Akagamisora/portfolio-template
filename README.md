@@ -1,50 +1,84 @@
-# vercel-next-template
+# ポートフォリオテンプレート
 
-Next.js 16（App Router）を [Vercel](https://vercel.com) にデプロイし、[Supabase](https://supabase.com) で認証・PostgreSQL、[Prisma](https://www.prisma.io) で DB アクセスするテンプレートです。**エンジニア向けポートフォリオ**（トップ・プロジェクト一覧・詳細）を匿名で閲覧でき、**`/admin` 配下はログイン必須**でプロフィールとプロジェクトを編集できます。
+Next.js 16（App Router）・[Vercel](https://vercel.com)・[Supabase](https://supabase.com)（認証・PostgreSQL）・[Prisma](https://www.prisma.io) を組み合わせた、エンジニア向けポートフォリオのひな型です。
+
+- **公開サイト**: トップ・プロジェクト一覧・詳細は **ログインなしで閲覧可能**
+- **管理画面**: **`/admin` 以下はログイン必須** — サイトプロフィールとプロジェクトを編集
+
+## スタック
+
+| 領域         | 利用技術                           |
+| ------------ | ---------------------------------- |
+| フレーム     | Next.js 16 / React 19              |
+| ホスティング | Vercel（任意・ローカルのみでも可） |
+| 認証・DB     | Supabase Auth + PostgreSQL         |
+| ORM          | Prisma                             |
 
 ## 前提
 
-- Node.js / npm
-- Supabase プロジェクト（Auth + Database を有効化）
-- Vercel プロジェクト（任意。ローカルのみでも可）
+- Node.js と npm
+- Supabase プロジェクト（Auth と Database を利用）
+- （任意）Vercel プロジェクト
 
 ## セットアップ
 
-1. 依存関係をインストールします。
+### 1. 依存関係のインストール
 
-   ```bash
-   npm install
-   ```
+```bash
+npm install
+```
 
-2. ルートに `.env` を作成し、次の変数を設定します。
-   - **NEXT_PUBLIC_SUPABASE_URL** / **NEXT_PUBLIC_SUPABASE_ANON_KEY**: Supabase の Project Settings → API
-   - **DATABASE_URL**: Transaction pooler（例: ポート 6543）の接続文字列。Prisma の実行時接続に使用（開発・本番・プレビューの実行時に必須）
-   - **DIRECT_URL**: 直結（ポート 5432）の接続文字列。`prisma migrate` などに使用
-   - **NEXT_PUBLIC_SITE_URL**（任意）: メール確認などのコールバック組み立てに使用（未設定時はリクエストヘッダから推定）。公開ページの Open Graph などで絶対 URL が必要な `metadataBase` にも使います。
-   - **ADMIN_EMAIL** または **ADMIN_EMAILS**（任意）: カンマ区切りでメールアドレスを指定すると、そのメールのユーザーのみが管理画面にアクセスできます。未設定の場合は **ログインできたユーザー全員** が編集可能になるため、本番では指定を推奨します。
+### 2. 環境変数
 
-3. データベースにマイグレーションを適用します。
+ルートに `.env` を作成し、次を設定します。
 
-   ```bash
-   npx prisma migrate deploy
-   ```
+**Supabase（クライアント用・Supabase Dashboard → Project Settings → API）**
 
-   開発時にローカルでスキーマを変える場合は `npx prisma migrate dev` を使います。
+- **NEXT_PUBLIC_SUPABASE_URL**
+- **NEXT_PUBLIC_SUPABASE_ANON_KEY**
 
-4. Supabase の **Authentication → URL Configuration** で、次を Site URL / Redirect URLs に追加します。
-   - 開発: `http://localhost:3000`
-   - コールバック: `http://localhost:3000/auth/callback`
-   - 本番: デプロイ先のオリジンと `https://<your-domain>/auth/callback`
+**Prisma / PostgreSQL**
 
-5. 開発サーバーを起動します。
+- **DATABASE_URL** — Transaction pooler（例: ポート `6543`）。アプリ実行時の接続。**開発・本番・プレビューいずれでも必須**
+- **DIRECT_URL** — 直結（例: ポート `5432`）。`prisma migrate` などマイグレーション用
 
-   ```bash
-   npm run dev
-   ```
+**任意**
 
-   [http://localhost:3000](http://localhost:3000) を開きます。
+- **NEXT_PUBLIC_SITE_URL** — メール確認リンクなどのベース URL（未設定時はリクエストヘッダから推定）。公開ページの Open Graph 用 `metadataBase` にも利用
+- **ADMIN_EMAIL** または **ADMIN_EMAILS** — カンマ区切り。**指定時はそのメールのユーザーのみ** が管理画面にアクセス可能。**未設定時はログイン済みユーザー全員が編集可能**になるため、本番では設定を推奨
 
-6. 初回は [http://localhost:3000/signup](http://localhost:3000/signup) でアカウントを作成し、[http://localhost:3000/admin](http://localhost:3000/admin) から **プロフィール** と **プロジェクト** を登録してください（公開ページは DB の内容をそのまま表示します）。
+### 3. マイグレーション
+
+```bash
+npx prisma migrate deploy
+```
+
+ローカルでスキーマを変更する開発時は `npx prisma migrate dev` を使います。
+
+### 4. Supabase の URL 設定
+
+**Authentication → URL Configuration** に次を追加します。
+
+| 用途             | URL の例                                                     |
+| ---------------- | ------------------------------------------------------------ |
+| 開発時サイト URL | `http://localhost:3000`                                      |
+| コールバック     | `http://localhost:3000/auth/callback`                        |
+| 本番             | デプロイ先のオリジンと `https://<your-domain>/auth/callback` |
+
+### 5. 開発サーバー
+
+```bash
+npm run dev
+```
+
+[http://localhost:3000](http://localhost:3000) を開きます。
+
+### 6. 初回データの登録
+
+1. [http://localhost:3000/signup](http://localhost:3000/signup) でアカウントを作成
+2. [http://localhost:3000/admin](http://localhost:3000/admin) で **プロフィール** と **プロジェクト** を登録
+
+公開ページはデータベースの内容をそのまま表示します。
 
 ## サイト構成
 
@@ -58,20 +92,36 @@ Next.js 16（App Router）を [Vercel](https://vercel.com) にデプロイし、
 | `/admin/profile`                        | サイトプロフィール編集                                      |
 | `/admin/projects`                       | プロジェクト CRUD                                           |
 
-## Vercel
+## 開発コマンド
 
-1. リポジトリを接続し、**Environment Variables** に上記と同じキーを設定します（本番・プレビューごとに Supabase プロジェクトを分けると安全です）。
-2. ビルドは `npm run build`。`postinstall` で `prisma generate` が実行されます。
-3. 本番 DB へのマイグレーションは CI または手動で `prisma migrate deploy` を実行する運用にしてください（初回デプロイ前に必須）。
+| コマンド        | 説明                     |
+| --------------- | ------------------------ |
+| `npm run dev`   | 開発サーバー             |
+| `npm run build` | 本番ビルド               |
+| `npm run start` | 本番サーバー（ビルド後） |
+| `npm run lint`  | oxlint + ESLint          |
+| `npm run fmt`   | oxfmt で整形             |
 
-## その他
+`postinstall` で `prisma generate` が実行されます。
 
-- **認可の単一ソース**: ルート保護とセッション更新は Next.js 16 の [`src/proxy.ts`](./src/proxy.ts) に集約しています。**閲覧は匿名可**、**`/admin` のみ未ログイン時に `/login` へ**リダイレクトします。認証 UI パスは [`src/lib/auth/public-paths.ts`](./src/lib/auth/public-paths.ts) を参照してください。
-- **管理画面の二重チェック**: [`src/lib/auth/require-user.ts`](./src/lib/auth/require-user.ts) の `requireAdminUser()` を `admin` レイアウトおよび管理用 Server Actions で利用し、書き込み前に必ず再検証してください。
-- クライアントでログイン状態を表示する場合は、`pathname` が変わるたびに `getUser()` を繰り返すより **`supabase.auth.onAuthStateChange` で 1 本購読**する方が無駄な往復を減らせます（Vercel の React / Next ベストプラクティスでも推奨されるパターンです）。
-- Prisma クライアントは [`src/lib/prisma.ts`](./src/lib/prisma.ts) から利用します。
+## Vercel にデプロイする場合
 
-## Learn More
+1. リポジトリを接続し、**Environment Variables** にローカルと同様の変数を設定する（本番とプレビューで Supabase を分けると安全です）。
+2. ビルドコマンドは `npm run build`。
+3. **初回デプロイ前**に本番 DB へ `prisma migrate deploy` を適用する（CI または手動）。
+
+## アーキテクチャメモ
+
+- **認可の集約**: ルート保護とセッション更新は [`src/proxy.ts`](./src/proxy.ts)。閲覧は匿名可、`/admin` のみ未ログイン時は `/login` へ。公開パスの一覧は [`src/lib/auth/public-paths.ts`](./src/lib/auth/public-paths.ts)。
+- **管理画面の検証**: [`src/lib/auth/require-user.ts`](./src/lib/auth/require-user.ts) の `requireAdminUser()` を admin レイアウトおよび Server Actions で利用し、書き込み前に必ず再検証する。
+- **クライアントの認証状態**: `pathname` のたびに `getUser()` を繰り返すより、`supabase.auth.onAuthStateChange` で一括購読する方が無駄なリクエストを減らせます。
+- **Prisma**: [`src/lib/prisma.ts`](./src/lib/prisma.ts) から利用します。
+
+## ライセンス
+
+リポジトリルートに `LICENSE` を置いてください（例: MIT）。未設定の場合は GitHub のライセンス表示が付きません。
+
+## 参考リンク
 
 - [Next.js Documentation](https://nextjs.org/docs)
 - [Supabase + Next.js](https://supabase.com/docs/guides/getting-started/quickstarts/nextjs)
