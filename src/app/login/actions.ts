@@ -11,5 +11,5 @@ export async function signInAction(email: string, password: string) {
     throw new Error(error.message);
   }
   revalidatePath("/", "layout");
-  redirect("/");
+  redirect("/admin");
 }

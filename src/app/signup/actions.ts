@@ -29,7 +29,7 @@ export async function signUpAction(email: string, password: string) {
   }
   if (data.session) {
     revalidatePath("/", "layout");
-    redirect("/");
+    redirect("/admin");
   }
   redirect(`/confirm-sign-up?email=${encodeURIComponent(email)}`);
 }

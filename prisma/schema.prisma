@@ -8,9 +8,31 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-model Todo {
-  id        String   @id @default(cuid())
-  content   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+/// シングルトン（id は常に 1）
+model SiteProfile {
+  id          Int     @id @default(1)
+  displayName String?
+  title       String?
+  bio         String? @db.Text
+  avatarUrl   String?
+  githubUrl   String?
+  twitterUrl  String?
+  emailPublic String?
+  updatedAt   DateTime @updatedAt
+}
+
+model Project {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  title         String
+  summary       String   @db.Text
+  body          String?  @db.Text
+  thumbnailUrl  String?
+  demoUrl       String?
+  repoUrl       String?
+  published     Boolean  @default(false)
+  tags          String[] @default([])
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }

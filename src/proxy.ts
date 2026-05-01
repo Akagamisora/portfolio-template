@@ -1,6 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
-import { isPublicAuthPath } from "@/lib/auth/public-paths";
+import { isAdminPath, isPublicAuthPath } from "@/lib/auth/public-paths";
 
 export async function proxy(request: NextRequest) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -34,12 +34,13 @@ export async function proxy(request: NextRequest) {
   const authenticated = user !== null;
   const { pathname } = request.nextUrl;
   const isAuthPath = isPublicAuthPath(pathname);
+  const needsAdminAuth = isAdminPath(pathname);
 
   if (authenticated && isAuthPath) {
-    return NextResponse.redirect(new URL("/", request.url));
+    return NextResponse.redirect(new URL("/admin", request.url));
   }
 
-  if (!authenticated && !isAuthPath) {
+  if (!authenticated && needsAdminAuth) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
