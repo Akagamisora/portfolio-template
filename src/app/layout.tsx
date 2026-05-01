@@ -13,7 +13,10 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+
 export const metadata: Metadata = {
+  ...(siteUrl ? { metadataBase: new URL(siteUrl.endsWith("/") ? siteUrl : `${siteUrl}/`) } : {}),
   title: {
     default: "Portfolio",
     template: "%s | Portfolio",

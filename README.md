@@ -18,9 +18,9 @@ Next.js 16（App Router）を [Vercel](https://vercel.com) にデプロイし、
 
 2. ルートに `.env` を作成し、次の変数を設定します。
    - **NEXT_PUBLIC_SUPABASE_URL** / **NEXT_PUBLIC_SUPABASE_ANON_KEY**: Supabase の Project Settings → API
-   - **DATABASE_URL**: Transaction pooler（例: ポート 6543）の接続文字列。Prisma の実行時接続に使用
+   - **DATABASE_URL**: Transaction pooler（例: ポート 6543）の接続文字列。Prisma の実行時接続に使用（開発・本番・プレビューの実行時に必須）
    - **DIRECT_URL**: 直結（ポート 5432）の接続文字列。`prisma migrate` などに使用
-   - **NEXT_PUBLIC_SITE_URL**（任意）: メール確認などのコールバック組み立てに使用（未設定時はリクエストヘッダから推定）
+   - **NEXT_PUBLIC_SITE_URL**（任意）: メール確認などのコールバック組み立てに使用（未設定時はリクエストヘッダから推定）。公開ページの Open Graph などで絶対 URL が必要な `metadataBase` にも使います。
    - **ADMIN_EMAIL** または **ADMIN_EMAILS**（任意）: カンマ区切りでメールアドレスを指定すると、そのメールのユーザーのみが管理画面にアクセスできます。未設定の場合は **ログインできたユーザー全員** が編集可能になるため、本番では指定を推奨します。
 
 3. データベースにマイグレーションを適用します。

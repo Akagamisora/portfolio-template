@@ -1,12 +1,41 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { connection } from "next/server";
+import { getPublishedProjectBySlug } from "@/lib/portfolio-public-data";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 interface ProjectDetailPageProps {
   params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({ params }: ProjectDetailPageProps): Promise<Metadata> {
+  await connection();
+  const { slug } = await params;
+  const project = await getPublishedProjectBySlug(slug);
+  if (!project) notFound();
+
+  const title = project.title;
+  const description = project.summary;
+  const thumb = project.thumbnailUrl?.trim();
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      ...(thumb ? { images: [{ url: thumb }] } : {}),
+    },
+    twitter: {
+      card: thumb ? "summary_large_image" : "summary",
+      title,
+      description,
+      ...(thumb ? { images: [thumb] } : {}),
+    },
+  };
 }
 
 function linesToParagraphs(text: string | null | undefined): ReactNode {
@@ -19,9 +48,10 @@ function linesToParagraphs(text: string | null | undefined): ReactNode {
 }
 
 export default async function ProjectDetailPage({ params }: ProjectDetailPageProps) {
+  await connection();
   const { slug } = await params;
-  const project = await prisma.project.findUnique({ where: { slug } });
-  if (!project || !project.published) notFound();
+  const project = await getPublishedProjectBySlug(slug);
+  if (!project) notFound();
 
   return (
     <div className="min-h-screen bg-zinc-50 font-sans dark:bg-black">

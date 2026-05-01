@@ -1,13 +1,21 @@
+import type { Metadata } from "next";
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { connection } from "next/server";
+import { getAllPublishedProjects } from "@/lib/portfolio-public-data";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
+
+export async function generateMetadata(): Promise<Metadata> {
+  await connection();
+  return {
+    title: "プロジェクト一覧",
+    description: "公開中のプロジェクト一覧です。",
+  };
+}
 
 export default async function ProjectsPage() {
-  const projects = await prisma.project.findMany({
-    where: { published: true },
-    orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
-  });
+  await connection();
+  const projects = await getAllPublishedProjects();
 
   return (
     <div className="min-h-screen bg-zinc-50 font-sans dark:bg-black">

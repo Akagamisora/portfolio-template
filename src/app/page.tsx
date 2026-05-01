@@ -1,8 +1,44 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { prisma } from "@/lib/prisma";
+import { connection } from "next/server";
+import { getHomeProjects, getSiteProfile } from "@/lib/portfolio-public-data";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
+
+function firstBioLine(bio: string | null | undefined): string | undefined {
+  const line = bio
+    ?.split("\n")
+    .map((l) => l.trim())
+    .find((l) => l.length > 0);
+  return line || undefined;
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  await connection();
+  const profile = await getSiteProfile();
+  const displayName = profile?.displayName?.trim() || "Your Name";
+  const roleTitle = profile?.title?.trim() || "エンジニア";
+  const bioLine = firstBioLine(profile?.bio ?? undefined);
+  const description = bioLine ?? `${displayName} — ${roleTitle}`;
+  const avatar = profile?.avatarUrl?.trim();
+
+  return {
+    title: displayName,
+    description,
+    openGraph: {
+      title: displayName,
+      description,
+      ...(avatar ? { images: [{ url: avatar }] } : {}),
+    },
+    twitter: {
+      card: avatar ? "summary_large_image" : "summary",
+      title: displayName,
+      description,
+      ...(avatar ? { images: [avatar] } : {}),
+    },
+  };
+}
 
 function linesToParagraphs(text: string | null | undefined): ReactNode {
   if (!text?.trim()) return null;
@@ -14,12 +50,9 @@ function linesToParagraphs(text: string | null | undefined): ReactNode {
 }
 
 export default async function HomePage() {
-  const profile = await prisma.siteProfile.findUnique({ where: { id: 1 } });
-  const projects = await prisma.project.findMany({
-    where: { published: true },
-    orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
-    take: 6,
-  });
+  await connection();
+  const profile = await getSiteProfile();
+  const projects = await getHomeProjects();
 
   const displayName = profile?.displayName?.trim() || "Your Name";
   const title = profile?.title?.trim() || "エンジニア";
